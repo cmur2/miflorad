@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"miflorad/common"
+
 	"github.com/currantlabs/gatt"
 	"github.com/currantlabs/gatt/examples/option"
 )
@@ -58,7 +60,7 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 
 	// Discover services and characteristics
 	{
-		_, err := p.DiscoverServices([]gatt.UUID{mifloraServiceUUID})
+		_, err := p.DiscoverServices([]gatt.UUID{common.MifloraServiceUUID})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to discover services, err: %s\n", err)
 			return
@@ -72,32 +74,32 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 		}
 	}
 
-	metaData, err := mifloraRequestVersionBattery(p)
+	metaData, err := common.MifloraRequestVersionBattery(p)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request version battery, err: %s\n", err)
 		return
 	}
-	fmt.Fprintf(os.Stdout, "Battery level:    %d%%\n", metaData.battery_level)
-	fmt.Fprintf(os.Stdout, "Firmware version: %s\n", metaData.firmware_version)
+	fmt.Fprintf(os.Stdout, "Battery level:    %d%%\n", metaData.BatteryLevel)
+	fmt.Fprintf(os.Stdout, "Firmware version: %s\n", metaData.FirmwareVersion)
 
 	// for the newer models a magic number must be written before we can read the current data
-	if metaData.firmware_version >= "2.6.6" {
-		err2 := mifloraRequestModeChange(p)
+	if metaData.FirmwareVersion >= "2.6.6" {
+		err2 := common.MifloraRequestModeChange(p)
 		if err2 != nil {
 			fmt.Fprintf(os.Stderr, "Failed to request mode change, err: %s\n", err2)
 			return
 		}
 	}
 
-	sensorData, err3 := mifloraRequstSensorData(p)
+	sensorData, err3 := common.MifloraRequstSensorData(p)
 	if err3 != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request sensor data, err: %s\n", err3)
 		return
 	}
-	fmt.Fprintf(os.Stdout, "Temparature:      %.1f °C\n", sensorData.temperature)
-	fmt.Fprintf(os.Stdout, "Brightness:       %d lux\n", sensorData.brightness)
-	fmt.Fprintf(os.Stdout, "Moisture:         %d %%\n", sensorData.moisture)
-	fmt.Fprintf(os.Stdout, "Conductivity:     %d µS/cm\n", sensorData.conductivity)
+	fmt.Fprintf(os.Stdout, "Temparature:      %.1f °C\n", sensorData.Temperature)
+	fmt.Fprintf(os.Stdout, "Brightness:       %d lux\n", sensorData.Brightness)
+	fmt.Fprintf(os.Stdout, "Moisture:         %d %%\n", sensorData.Moisture)
+	fmt.Fprintf(os.Stdout, "Conductivity:     %d µS/cm\n", sensorData.Conductivity)
 }
 
 func onPeriphDisconnected(p gatt.Peripheral, err error) {
