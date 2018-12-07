@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/binary"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -16,21 +14,20 @@ import (
 const discoveryTimeout = 4 * time.Second
 const connectionTimeout = 4 * time.Second
 
-var mifloraModeChangeData = []byte{0xa0, 0x1f}
+type DiscoveryResult struct {
+	p    gatt.Peripheral
+	a    *gatt.Advertisement
+	rssi int
+}
 
-var mifloraServiceUUID = gatt.MustParseUUID("00001204-0000-1000-8000-00805f9b34fb")
-var mifloraCharModeChangeUUID = gatt.MustParseUUID("00001a00-0000-1000-8000-00805f9b34fb")
-var mifloraCharReadSensorDataUUID = gatt.MustParseUUID("00001a01-0000-1000-8000-00805f9b34fb")
-var mifloraCharVersionBatteryUUID = gatt.MustParseUUID("00001a02-0000-1000-8000-00805f9b34fb")
-
-var discoveryDone = make(chan gatt.Peripheral)
+var discoveryDone = make(chan DiscoveryResult)
 var connectionDone = make(chan struct{})
 
 func onStateChanged(device gatt.Device, state gatt.State) {
-	fmt.Println("State:", state)
+	fmt.Fprintln(os.Stderr, "State:", state)
 	switch state {
 	case gatt.StatePoweredOn:
-		fmt.Println("Scanning...")
+		fmt.Fprintln(os.Stderr, "Scanning...")
 		device.Scan([]gatt.UUID{}, false)
 		return
 	default:
@@ -40,7 +37,7 @@ func onStateChanged(device gatt.Device, state gatt.State) {
 
 func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
 	id := strings.ToUpper(flag.Args()[0])
-	fmt.Println(p.ID())
+	// fmt.Fprintln(os.Stderr, p.ID())
 	if strings.ToUpper(p.ID()) != id {
 		return
 	}
@@ -48,98 +45,77 @@ func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
 	// Stop scanning once we've got the peripheral we're looking for.
 	p.Device().StopScanning()
 
-	discoveryDone <- p
-}
-
-func findServiceByUUID(services []*gatt.Service, u gatt.UUID) *gatt.Service {
-	for _, service := range services {
-		if service.UUID().Equal(u) {
-			return service
-		}
-	}
-	return nil
-}
-
-func findCharacteristicByUUID(characteristics []*gatt.Characteristic, u gatt.UUID) *gatt.Characteristic {
-	for _, characteristic := range characteristics {
-		if characteristic.UUID().Equal(u) {
-			return characteristic
-		}
-	}
-	return nil
+	discoveryDone <- DiscoveryResult{p, a, rssi}
 }
 
 func onPeriphConnected(p gatt.Peripheral, err error) {
-	fmt.Println("Connected")
-	defer p.Device().CancelConnection(p)
+	fmt.Fprintln(os.Stderr, "Connected")
+	// defer p.Device().CancelConnection(p)
 
 	if err := p.SetMTU(500); err != nil {
-		fmt.Printf("Failed to set MTU, err: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to set MTU, err: %s\n", err)
 	}
 
-	// Discovery services
-	services, err := p.DiscoverServices([]gatt.UUID{mifloraServiceUUID})
+	// Discover services and characteristics
+	{
+		_, err := p.DiscoverServices([]gatt.UUID{mifloraServiceUUID})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to discover services, err: %s\n", err)
+			return
+		}
+	}
+	for _, service := range p.Services() {
+		_, err := p.DiscoverCharacteristics(nil, service)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to discover characteristics, err: %s\n", err)
+			return
+		}
+	}
+
+	metaData, err := mifloraRequestVersionBattery(p)
 	if err != nil {
-		fmt.Printf("Failed to discover services, err: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to request version battery, err: %s\n", err)
 		return
 	}
+	fmt.Fprintf(os.Stdout, "Battery level:    %d%%\n", metaData.battery_level)
+	fmt.Fprintf(os.Stdout, "Firmware version: %s\n", metaData.firmware_version)
 
-	if len(services) == 1 {
-		mifloraService := findServiceByUUID(services, mifloraServiceUUID)
-
-		chars, err := p.DiscoverCharacteristics(nil, mifloraService)
-		if err != nil {
-			fmt.Printf("Failed to discover characteristics, err: %s\n", err)
+	// for the newer models a magic number must be written before we can read the current data
+	if metaData.firmware_version >= "2.6.6" {
+		err2 := mifloraRequestModeChange(p)
+		if err2 != nil {
+			fmt.Fprintf(os.Stderr, "Failed to request mode change, err: %s\n", err2)
 			return
 		}
-
-		mifloraVersionBatteryChar := findCharacteristicByUUID(chars, mifloraCharVersionBatteryUUID)
-		bytes, err := p.ReadCharacteristic(mifloraVersionBatteryChar)
-		if err != nil {
-			fmt.Printf("Failed to read characteristic, err: %s\n", err)
-			return
-		}
-		fmt.Printf("Battery level:    %d%%\n", uint8(bytes[0]))
-		fmt.Printf("Firmware version: %s\n", string(bytes[2:]))
-
-		// for the newer models a magic number must be written before we can read the current data
-		if string(bytes[2:]) >= "2.6.6" {
-			mifloraModeChangeChar := findCharacteristicByUUID(chars, mifloraCharModeChangeUUID)
-			err2 := p.WriteCharacteristic(mifloraModeChangeChar, mifloraModeChangeData, false)
-			if err2 != nil {
-				fmt.Printf("Failed to write characteristic, err: %s\n", err2)
-				return
-			}
-		}
-
-		mifloraSensorDataChar := findCharacteristicByUUID(chars, mifloraCharReadSensorDataUUID)
-		bytes2, err3 := p.ReadCharacteristic(mifloraSensorDataChar)
-		if err3 != nil {
-			fmt.Printf("Failed to read characteristic, err: %s\n", err3)
-			return
-		}
-		fmt.Printf("Temparature:      %f °C\n", float64(binary.LittleEndian.Uint16(bytes2[0:2]))/10.0)
-		fmt.Printf("Brightness:       %d lux\n", binary.LittleEndian.Uint32(bytes2[3:7]))
-		fmt.Printf("Moisture:         %d %%\n", uint8(bytes2[7]))
-		fmt.Printf("Conductivity:     %d µS/cm\n", binary.LittleEndian.Uint16(bytes2[8:10]))
 	}
+
+	sensorData, err3 := mifloraRequstSensorData(p)
+	if err3 != nil {
+		fmt.Fprintf(os.Stderr, "Failed to request sensor data, err: %s\n", err3)
+		return
+	}
+	fmt.Fprintf(os.Stdout, "Temparature:      %.1f °C\n", sensorData.temperature)
+	fmt.Fprintf(os.Stdout, "Brightness:       %d lux\n", sensorData.brightness)
+	fmt.Fprintf(os.Stdout, "Moisture:         %d %%\n", sensorData.moisture)
+	fmt.Fprintf(os.Stdout, "Conductivity:     %d µS/cm\n", sensorData.conductivity)
 }
 
 func onPeriphDisconnected(p gatt.Peripheral, err error) {
-	fmt.Println("Disconnected")
+	fmt.Fprintln(os.Stderr, "Disconnected")
 	close(connectionDone)
 }
 
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
-		log.Fatalf("usage: %s [options] peripheral-id\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] peripheral-id\n", os.Args[0])
+		os.Exit(1)
 	}
 
 	device, err := gatt.NewDevice(option.DefaultClientOptions...)
 	if err != nil {
-		log.Fatalf("Failed to open device, err: %s\n", err)
-		return
+		fmt.Fprintf(os.Stderr, "Failed to open device, err: %s\n", err)
+		os.Exit(1)
 	}
 
 	// Register discovery handler
@@ -147,19 +123,19 @@ func main() {
 
 	device.Init(onStateChanged)
 
-	var peripheral gatt.Peripheral
+	var discoveryResult DiscoveryResult
 
 	select {
-	case peripheral = <-discoveryDone:
-		fmt.Println("Discovery done")
+	case discoveryResult = <-discoveryDone:
+		fmt.Fprintln(os.Stderr, "Discovery done")
 	case <-time.After(discoveryTimeout):
-		// fmt.Println("Discovery timed out")
-		log.Fatalf("Discovery timed out\n")
+		fmt.Fprintln(os.Stderr, "Discovery timed out")
 		device.StopScanning()
 		device.Stop()
+		os.Exit(1)
 	}
 
-	fmt.Printf("Discovered peripheral ID:%s, NAME:(%s)\n", peripheral.ID(), peripheral.Name())
+	fmt.Fprintf(os.Stderr, "Discovered peripheral ID:%s, NAME:(%s), RSSI:%d\n", discoveryResult.p.ID(), discoveryResult.p.Name(), discoveryResult.rssi)
 
 	// Register connection handlers
 	device.Handle(
@@ -167,14 +143,19 @@ func main() {
 		gatt.PeripheralDisconnected(onPeriphDisconnected),
 	)
 
-	device.Connect(peripheral)
+	device.Connect(discoveryResult.p)
 
 	select {
 	case <-connectionDone:
-		fmt.Println("Connection done")
+		fmt.Fprintln(os.Stderr, "Connection done")
 	case <-time.After(connectionTimeout):
-		fmt.Println("Connection timed out")
+		fmt.Fprintln(os.Stderr, "Connection timed out")
+		fmt.Fprintln(os.Stderr, "A")
+		// device.CancelConnection(discoveryResult.p)
+		fmt.Fprintln(os.Stderr, "B")
 	}
 
-	device.Stop()
+	fmt.Fprintln(os.Stderr, "C")
+	// device.Stop()
+	fmt.Fprintln(os.Stderr, "D")
 }

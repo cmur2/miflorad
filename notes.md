@@ -6,6 +6,10 @@ select-attribute /org/bluez/hci0/dev_C4_7C_8D_66_D5_27/service0002/char0003
 select-attribute 00002a00-0000-1000-8000-00805f9b34fb
 read 0003
 
+hcitool dev
+https://bbs.archlinux.org/viewtopic.php?id=193813
+modprobe -r btusb; modprobe btusb
+
 08:38:52::$ gatttool --device=C4:7C:8D:66:D5:27 --char-read -a 0x03
 Characteristic value/descriptor: 46 6c 6f 77 65 72 20 63 61 72 65
 
