@@ -90,10 +90,10 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 		return
 	}
 
-	fmt.Fprintf(os.Stdout, "%s.miflora.%s.battery_level %d %d\n", prefix, id, metaData.BatteryLevel, time.Now().Unix())
-	// fmt.Fprintf(os.Stdout, "Battery level:    %d%%\n", metaData.BatteryLevel)
-	// fmt.Fprintf(os.Stdout, "%s.miflora.%s.firmware_version %s %d\n", prefix, id, metaData.FirmwareVersion, time.Now().Unix())
 	fmt.Fprintf(os.Stderr, "Firmware version: %s\n", metaData.FirmwareVersion)
+
+	fmt.Fprintf(os.Stdout, "%s.miflora.%s.battery_level %d %d\n", prefix, id, metaData.BatteryLevel, time.Now().Unix())
+	fmt.Fprintf(os.Stdout, "%s.miflora.%s.firmware_version %s %d\n", prefix, id, metaData.NumericFirmwareVersion(), time.Now().Unix())
 
 	// for the newer models a magic number must be written before we can read the current data
 	if metaData.FirmwareVersion >= "2.6.6" {
@@ -113,10 +113,6 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.brightness %d %d\n", prefix, id, sensorData.Brightness, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.moisture %d %d\n", prefix, id, sensorData.Moisture, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.conductivity %d %d\n", prefix, id, sensorData.Conductivity, time.Now().Unix())
-	// fmt.Fprintf(os.Stdout, "Temperature:      %.1f °C\n", sensorData.Temperature)
-	// fmt.Fprintf(os.Stdout, "Brightness:       %d lux\n", sensorData.Brightness)
-	// fmt.Fprintf(os.Stdout, "Moisture:         %d %%\n", sensorData.Moisture)
-	// fmt.Fprintf(os.Stdout, "Conductivity:     %d µS/cm\n", sensorData.Conductivity)
 }
 
 func onPeriphDisconnected(p gatt.Peripheral, err error) {
@@ -171,6 +167,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Connection timed out")
 		// TODO: can hang due when device has terminated the connection on it's own already
 		// device.CancelConnection(discoveryResult.p)
+		os.Exit(1)
 	}
 
 	// Note: calls CancelConnetcion() and thus suffers the same problem, kernel will cleanup after our process finishes

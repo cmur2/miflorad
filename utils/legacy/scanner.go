@@ -1,12 +1,12 @@
 //shows how to watch for new devices and list them
-package main
+package legacy
 
 import (
-  "os"
+	"os"
 
-  log "github.com/sirupsen/logrus"
-  "github.com/muka/go-bluetooth/api"
-  "github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/emitter"
+	log "github.com/sirupsen/logrus"
 )
 
 const adapterID = "hci0"

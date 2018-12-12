@@ -3,6 +3,9 @@ package common
 import (
 	"encoding/binary"
 	"errors"
+	"math"
+	"strconv"
+	"strings"
 
 	"github.com/currantlabs/gatt"
 )
@@ -106,4 +109,17 @@ func MifloraRequstSensorData(p gatt.Peripheral) (SensorDataResponse, error) {
 		Moisture:     uint8(bytes[7]),
 		Conductivity: binary.LittleEndian.Uint16(bytes[8:10]),
 	}, nil
+}
+
+func (res VersionBatteryResponse) NumericFirmwareVersion() int {
+	// turns "2.3.4" into 20304
+	version := 0
+	parts := strings.Split(res.FirmwareVersion, ".")
+	for i, part := range parts {
+		partNumber, err := strconv.Atoi(part)
+		if err != nil {
+			version += int(math.Pow10((len(parts)-(i+1))*2)) * partNumber
+		}
+	}
+	return version
 }
