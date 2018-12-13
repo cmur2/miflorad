@@ -5,7 +5,7 @@ all: clean build test
 
 .PHONY: run
 run: clean build test
-	cmd/munin-miflora/munin-miflora xyz 00:00:00:00:00:00
+	sudo cmd/munin-miflora/munin-miflora xyz 00:00:00:00:00:00
 
 .PHONY: clean
 clean:
@@ -18,4 +18,4 @@ build: cmd/munin-miflora/munin-miflora
 test: build
 
 cmd/munin-miflora/munin-miflora:
-	cd cmd/munin-miflora; go build; cd ../..
+	cd cmd/munin-miflora && go build && cd ../..
