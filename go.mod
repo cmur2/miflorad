@@ -4,7 +4,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142 // indirect
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/godbus/dbus v0.0.0-20181031085051-66d97ae // indirect
+	github.com/godbus/dbus/v5 v5.0.1 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
