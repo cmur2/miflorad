@@ -7,8 +7,8 @@ import (
 )
 
 type VersionBatteryResponse struct {
-	FirmwareVersion string // as "x.y.z"
 	BatteryLevel    uint8  // in percent 0-100
+	FirmwareVersion string // as "x.y.z"
 }
 
 type SensorDataResponse struct {

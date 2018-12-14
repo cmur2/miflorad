@@ -19,6 +19,7 @@ build: cmd/munin-miflora/munin-miflora cmd/munin-miflora/munin-miflora-gatt
 
 .PHONY: test
 test: build
+	cd common && go test -v -race && cd ..
 
 .PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:

@@ -17,8 +17,8 @@ func MifloraGetModeChangeData() []byte {
 
 func ParseVersionBattery(bytes []byte) VersionBatteryResponse {
 	return VersionBatteryResponse{
-		string(bytes[2:]),
-		uint8(bytes[0]),
+		BatteryLevel:    uint8(bytes[0]),
+		FirmwareVersion: string(bytes[2:]),
 	}
 }
 

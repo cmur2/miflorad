@@ -14,4 +14,5 @@ require (
 	github.com/muka/go-bluetooth v0.0.0-20181012115104-31d8f53bf9a1
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/sirupsen/logrus v1.2.0 // indirect
+	github.com/stretchr/testify v1.2.2
 )
