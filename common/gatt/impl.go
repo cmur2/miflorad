@@ -1,11 +1,10 @@
 package gatt
 
 import (
-	"errors"
-
 	"miflorad/common"
 
 	"github.com/currantlabs/gatt"
+	"github.com/pkg/errors"
 )
 
 var MifloraCharVersionBatteryUUID = gatt.MustParseUUID("00001a02-0000-1000-8000-00805f9b34fb")
@@ -41,7 +40,7 @@ func MifloraRequestVersionBattery(p gatt.Peripheral) (common.VersionBatteryRespo
 
 	bytes, err := p.ReadCharacteristic(mifloraVersionBatteryChar)
 	if err != nil {
-		return common.VersionBatteryResponse{}, err
+		return common.VersionBatteryResponse{}, errors.Wrap(err, "can't read version battery")
 	}
 
 	return common.ParseVersionBattery(bytes), nil
@@ -60,7 +59,7 @@ func MifloraRequestModeChange(p gatt.Peripheral) error {
 
 	err := p.WriteCharacteristic(mifloraModeChangeChar, common.MifloraGetModeChangeData(), false)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't change mode")
 	}
 
 	return nil
@@ -79,7 +78,7 @@ func MifloraRequstSensorData(p gatt.Peripheral) (common.SensorDataResponse, erro
 
 	bytes, err := p.ReadCharacteristic(mifloraSensorDataChar)
 	if err != nil {
-		return common.SensorDataResponse{}, err
+		return common.SensorDataResponse{}, errors.Wrap(err, "can't read sensor data")
 	}
 
 	return common.ParseSensorData(bytes), nil

@@ -1,11 +1,10 @@
 package ble
 
 import (
-	"errors"
-
 	"miflorad/common"
 
 	"github.com/go-ble/ble"
+	"github.com/pkg/errors"
 )
 
 func FindServiceByUUID(services []*ble.Service, u ble.UUID) *ble.Service {
@@ -39,7 +38,7 @@ func RequestVersionBattery(client ble.Client, profile *ble.Profile) (common.Vers
 
 	bytes, err := client.ReadCharacteristic(mifloraVersionBatteryChar)
 	if err != nil {
-		return common.VersionBatteryResponse{}, err
+		return common.VersionBatteryResponse{}, errors.Wrap(err, "can't read version battery")
 	}
 
 	return common.ParseVersionBattery(bytes), nil
@@ -58,7 +57,7 @@ func RequestModeChange(client ble.Client, profile *ble.Profile) error {
 
 	err := client.WriteCharacteristic(mifloraModeChangeChar, common.MifloraGetModeChangeData(), false)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't change mode")
 	}
 
 	return nil
@@ -77,7 +76,7 @@ func RequestSensorData(client ble.Client, profile *ble.Profile) (common.SensorDa
 
 	bytes, err := client.ReadCharacteristic(mifloraSensorDataChar)
 	if err != nil {
-		return common.SensorDataResponse{}, err
+		return common.SensorDataResponse{}, errors.Wrap(err, "can't read sensor data")
 	}
 
 	return common.ParseSensorData(bytes), nil

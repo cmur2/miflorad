@@ -16,7 +16,6 @@ import (
 )
 
 const discoveryTimeout = 4 * time.Second
-const connectionTimeout = 4 * time.Second
 
 func readData(client ble.Client, profile *ble.Profile) {
 	prefix := flag.Args()[0]
