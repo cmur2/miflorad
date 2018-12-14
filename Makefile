@@ -1,21 +1,29 @@
 .POSIX:
 
+MIFLORA_ADDR?=00:00:00:00:00:00
+
 .PHONY: all
 all: clean build test
 
 .PHONY: run
 run: clean build test
-	sudo cmd/munin-miflora/munin-miflora xyz 00:00:00:00:00:00
+	sudo cmd/munin-miflora/munin-miflora xyz $(MIFLORA_ADDR)
 
 .PHONY: clean
 clean:
 	rm -f cmd/munin-miflora/munin-miflora
+	rm -f cmd/munin-miflora/munin-miflora-gatt
 
 .PHONY: build
-build: cmd/munin-miflora/munin-miflora
+build: cmd/munin-miflora/munin-miflora cmd/munin-miflora/munin-miflora-gatt
 
 .PHONY: test
 test: build
 
+.PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:
 	cd cmd/munin-miflora && go build && cd ../..
+
+.PHONY: cmd/munin-miflora/munin-miflora-gatt
+cmd/munin-miflora/munin-miflora-gatt:
+	cd cmd/munin-miflora-gatt && go build && cd ../..
