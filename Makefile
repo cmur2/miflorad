@@ -23,8 +23,8 @@ test: build
 
 .PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:
-	cd cmd/munin-miflora && go build && cd ../..
+	cd cmd/munin-miflora && CGO_ENABLED=0 go build && cd ../..
 
 .PHONY: cmd/munin-miflora/munin-miflora-gatt
 cmd/munin-miflora/munin-miflora-gatt:
-	cd cmd/munin-miflora-gatt && go build && cd ../..
+	cd cmd/munin-miflora-gatt && CGO_ENABLED=0 go build && cd ../..
