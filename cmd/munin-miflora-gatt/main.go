@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -26,13 +25,18 @@ type DiscoveryResult struct {
 	rssi int
 }
 
-var discoveryDone = make(chan DiscoveryResult)
-var connectionDone = make(chan struct{})
+var (
+	discoveryDone  = make(chan DiscoveryResult)
+	connectionDone = make(chan struct{})
+)
+
+var timeConnectStart time.Time
 
 func onStateChanged(device gatt.Device, state gatt.State) {
 	fmt.Fprintln(os.Stderr, "State:", state)
 	switch state {
 	case gatt.StatePoweredOn:
+		timeConnectStart = time.Now()
 		fmt.Fprintln(os.Stderr, "Scanning...")
 		device.Scan([]gatt.UUID{}, false)
 		return
@@ -56,6 +60,14 @@ func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
 func onPeriphConnected(p gatt.Peripheral, err error) {
 	fmt.Fprintln(os.Stderr, "Connected")
 
+	prefix := flag.Args()[0]
+	id := common.MifloraGetAlphaNumericID(flag.Args()[1])
+
+	timeConnectTook := time.Since(timeConnectStart).Seconds()
+	fmt.Fprintf(os.Stdout, "%s.miflora.%s.connect_time %.2f %d\n", prefix, id, timeConnectTook, time.Now().Unix())
+
+	timeReadoutStart := time.Now()
+
 	// Note: can hang due when device has terminated the connection on it's own already
 	// defer p.Device().CancelConnection(p)
 
@@ -68,6 +80,7 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 		_, err := p.DiscoverServices([]gatt.UUID{gatt.MustParseUUID(common.MifloraServiceUUID)})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to discover services, err: %s\n", err)
+			fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 			return
 		}
 	}
@@ -75,21 +88,15 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 		_, err := p.DiscoverCharacteristics(nil, service)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to discover characteristics, err: %s\n", err)
+			fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 			return
 		}
 	}
 
-	prefix := flag.Args()[0]
-
-	regexNonAlphaNumeric, err4 := regexp.Compile("[^a-z0-9]+")
-	if err4 != nil {
-		fmt.Fprintf(os.Stderr, "Failed to compile regex, err: %s\n", err4)
-	}
-	id := regexNonAlphaNumeric.ReplaceAllString(strings.ToLower(flag.Args()[1]), "")
-
 	metaData, err := impl.MifloraRequestVersionBattery(p)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request version battery, err: %s\n", err)
+		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 		return
 	}
 
@@ -98,11 +105,11 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.battery_level %d %d\n", prefix, id, metaData.BatteryLevel, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.firmware_version %d %d\n", prefix, id, metaData.NumericFirmwareVersion(), time.Now().Unix())
 
-	// for the newer models a magic number must be written before we can read the current data
-	if metaData.FirmwareVersion >= "2.6.6" {
+	if metaData.RequiresModeChangeBeforeRead() {
 		err2 := impl.MifloraRequestModeChange(p)
 		if err2 != nil {
 			fmt.Fprintf(os.Stderr, "Failed to request mode change, err: %s\n", err2)
+			fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 			return
 		}
 	}
@@ -110,12 +117,16 @@ func onPeriphConnected(p gatt.Peripheral, err error) {
 	sensorData, err3 := impl.MifloraRequstSensorData(p)
 	if err3 != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request sensor data, err: %s\n", err3)
+		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 		return
 	}
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.temperature %.1f %d\n", prefix, id, sensorData.Temperature, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.brightness %d %d\n", prefix, id, sensorData.Brightness, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.moisture %d %d\n", prefix, id, sensorData.Moisture, time.Now().Unix())
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.conductivity %d %d\n", prefix, id, sensorData.Conductivity, time.Now().Unix())
+
+	timeReadoutTook := time.Since(timeReadoutStart).Seconds()
+	fmt.Fprintf(os.Stdout, "%s.miflora.%s.readout_time %.2f %d\n", prefix, id, timeReadoutTook, time.Now().Unix())
 
 	// TODO: report that we are done without closing connection, since it could hang
 	close(connectionDone)
@@ -133,9 +144,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	prefix := flag.Args()[0]
+	id := common.MifloraGetAlphaNumericID(flag.Args()[1])
+
 	device, err := gatt.NewDevice(option.DefaultClientOptions...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open device, err: %s\n", err)
+		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 		os.Exit(1)
 	}
 
@@ -151,12 +166,15 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Discovery done")
 	case <-time.After(discoveryTimeout):
 		fmt.Fprintln(os.Stderr, "Discovery timed out")
+		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 		device.StopScanning()
 		device.Stop()
 		os.Exit(1)
 	}
 
 	fmt.Fprintf(os.Stderr, "Discovered peripheral ID:%s, NAME:(%s), RSSI:%d\n", discoveryResult.p.ID(), discoveryResult.p.Name(), discoveryResult.rssi)
+
+	fmt.Fprintf(os.Stdout, "%s.miflora.%s.rssi %d %d\n", prefix, id, discoveryResult.rssi, time.Now().Unix())
 
 	// Register connection handlers
 	device.Handle(

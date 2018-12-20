@@ -6,11 +6,13 @@ import (
 	"strings"
 )
 
+// captures response when reading meta data of miflora device
 type VersionBatteryResponse struct {
 	BatteryLevel    uint8  // in percent 0-100
 	FirmwareVersion string // as "x.y.z"
 }
 
+// captures response when reading sensor data of miflora device
 type SensorDataResponse struct {
 	Temperature  float64 // in degree C
 	Brightness   uint32  // in lux
@@ -18,8 +20,8 @@ type SensorDataResponse struct {
 	Conductivity uint16  // in µS/cm
 }
 
+// turns firmware version "2.3.4" into 20304
 func (res VersionBatteryResponse) NumericFirmwareVersion() int {
-	// turns "2.3.4" into 20304
 	version := 0
 	parts := strings.Split(res.FirmwareVersion, ".")
 	for i, part := range parts {
@@ -30,4 +32,9 @@ func (res VersionBatteryResponse) NumericFirmwareVersion() int {
 		version += int(math.Pow10((len(parts)-(i+1))*2)) * partNumber
 	}
 	return version
+}
+
+// for the newer models a magic number must be written before we can read the current data
+func (res VersionBatteryResponse) RequiresModeChangeBeforeRead() bool {
+	return res.FirmwareVersion >= "2.6.6"
 }
