@@ -17,11 +17,11 @@ import (
 
 const discoveryTimeout = 10 * time.Second
 
-func readData(client ble.Client, profile *ble.Profile) {
+func readData(client ble.Client) {
 	prefix := flag.Args()[0]
 	id := common.MifloraGetAlphaNumericID(flag.Args()[1])
 
-	metaData, err := impl.RequestVersionBattery(client, profile)
+	metaData, err := impl.RequestVersionBattery(client)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request version battery, err: %s\n", err)
 		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
@@ -34,7 +34,7 @@ func readData(client ble.Client, profile *ble.Profile) {
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.firmware_version %d %d\n", prefix, id, metaData.NumericFirmwareVersion(), time.Now().Unix())
 
 	if metaData.RequiresModeChangeBeforeRead() {
-		err2 := impl.RequestModeChange(client, profile)
+		err2 := impl.RequestModeChange(client)
 		if err2 != nil {
 			fmt.Fprintf(os.Stderr, "Failed to request mode change, err: %s\n", err2)
 			fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
@@ -42,7 +42,7 @@ func readData(client ble.Client, profile *ble.Profile) {
 		}
 	}
 
-	sensorData, err3 := impl.RequestSensorData(client, profile)
+	sensorData, err3 := impl.RequestSensorData(client)
 	if err3 != nil {
 		fmt.Fprintf(os.Stderr, "Failed to request sensor data, err: %s\n", err3)
 		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
@@ -118,14 +118,13 @@ func main() {
 
 	timeReadoutStart := time.Now()
 
-	profile, err := client.DiscoverProfile(true)
-	if err != nil {
+	if _, err := client.DiscoverProfile(true); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to discover profile, err: %s\n", err)
 		fmt.Fprintf(os.Stdout, "%s.miflora.%s.failed 1 %d\n", prefix, id, time.Now().Unix())
 		os.Exit(1)
 	}
 
-	readData(client, profile)
+	readData(client)
 
 	timeReadoutTook := time.Since(timeReadoutStart).Seconds()
 	fmt.Fprintf(os.Stdout, "%s.miflora.%s.readout_time %.2f %d\n", prefix, id, timeReadoutTook, time.Now().Unix())

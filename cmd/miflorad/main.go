@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	scanTimeout = flag.Duration("scantimeout", 6*time.Second, "timeout after that a scan per peripheral will be aborted")
-	interval    = flag.Duration("interval", 15*time.Second, "metrics collection interval")
+	scanTimeout = flag.Duration("scantimeout", 10*time.Second, "timeout after that a scan per peripheral will be aborted")
+	interval    = flag.Duration("interval", 25*time.Second, "metrics collection interval")
 	readRetries = flag.Int("readretries", 2, "number of times reading will be attempted per peripheral")
 )
 
@@ -40,7 +40,8 @@ var (
 
 func checkTooShortInterval() error {
 	numPeripherals := int64(len(flag.Args()))
-	if (*scanTimeout).Nanoseconds()*int64(*readRetries)*numPeripherals >= (*interval).Nanoseconds() {
+	numReadRetries := int64(*readRetries)
+	if (*scanTimeout).Nanoseconds()*numReadRetries*numPeripherals >= (*interval).Nanoseconds() {
 		return errors.New(fmt.Sprintf(
 			"The interval of %s is too short given the scan timeout of %s for %d peripheral(s) with %d retries each! Exiting...\n",
 			*interval, *scanTimeout, numPeripherals, *readRetries))
@@ -49,8 +50,10 @@ func checkTooShortInterval() error {
 }
 
 func readData(peripheral *peripheral, client ble.Client) error {
+	// re-request meta data (for battery level) if last check more than 24 hours ago
+	// Source: https://github.com/open-homeautomation/miflora/blob/ffd95c3e616df8843cc8bff99c9b60765b124092/miflora/miflora_poller.py#L92
 	if time.Since(peripheral.lastMetaDataFetch) >= 24*time.Hour {
-		metaData, err := impl.RequestVersionBattery(client, client.Profile())
+		metaData, err := impl.RequestVersionBattery(client)
 		if err != nil {
 			return errors.Wrap(err, "can't request version battery")
 		}
@@ -59,13 +62,13 @@ func readData(peripheral *peripheral, client ble.Client) error {
 	}
 
 	if peripheral.metaData.RequiresModeChangeBeforeRead() {
-		err2 := impl.RequestModeChange(client, client.Profile())
+		err2 := impl.RequestModeChange(client)
 		if err2 != nil {
 			return errors.Wrap(err2, "can't request mode change")
 		}
 	}
 
-	sensorData, err3 := impl.RequestSensorData(client, client.Profile())
+	sensorData, err3 := impl.RequestSensorData(client)
 	if err3 != nil {
 		return errors.Wrap(err3, "can't request sensor data")
 	}
@@ -78,8 +81,15 @@ func readData(peripheral *peripheral, client ble.Client) error {
 func connectPeripheral(peripheral *peripheral) error {
 	fmt.Fprintf(os.Stderr, "Scanning for %s...\n", peripheral.id)
 
+	// only way to get back the found advertisement, must be buffered!
+	foundAdvertisementChannel := make(chan ble.Advertisement, 1)
+
 	filter := func(adv ble.Advertisement) bool {
-		return strings.ToUpper(adv.Addr().String()) == strings.ToUpper(peripheral.id)
+		if strings.ToUpper(adv.Addr().String()) == strings.ToUpper(peripheral.id) {
+			foundAdvertisementChannel <- adv
+			return true
+		}
+		return false
 	}
 
 	timeConnectStart := time.Now()
@@ -93,6 +103,9 @@ func connectPeripheral(peripheral *peripheral) error {
 	timeConnectTook := time.Since(timeConnectStart).Seconds()
 	fmt.Println(timeConnectTook)
 	// fmt.Fprintf(os.Stdout, "%s.miflora.%s.connect_time %.2f %d\n", prefix, id, timeConnectTook, time.Now().Unix())
+
+	// foundAdvertisement := <-foundAdvertisementChannel
+	// fmt.Fprintf(os.Stdout, "%s.miflora.%s.rssi %d %d\n", prefix, id, foundAdvertisement.RSSI(), time.Now().Unix())
 
 	// Source: https://github.com/go-ble/ble/blob/master/examples/basic/explorer/main.go#L53
 	// Make sure we had the chance to print out the message.
@@ -138,6 +151,7 @@ func readPeripheral(peripheral *peripheral) error {
 
 func readAllPeripherals(quit chan struct{}) {
 	for _, peripheral := range allPeripherals {
+		// check for quit signal (non-blocking) and terminate
 		select {
 		case <-quit:
 			return
@@ -180,14 +194,16 @@ func main() {
 	go func() {
 		fmt.Fprintf(os.Stderr, "Starting miflorad loop with %s interval...\n", *interval)
 
+		// populate all peripherals data structure
 		allPeripherals = make([]*peripheral, len(flag.Args()))
 		for i, peripheralID := range flag.Args() {
 			allPeripherals[i] = &peripheral{
 				id:                peripheralID,
-				lastMetaDataFetch: time.Unix(0, 0),
+				lastMetaDataFetch: time.Unix(0, 0), // force immediate 1st request
 			}
 		}
 
+		// main loop
 		readAllPeripherals(quit)
 		for range intervalTicker.C {
 			readAllPeripherals(quit)

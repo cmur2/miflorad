@@ -7,7 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func FindServiceByUUID(services []*ble.Service, u ble.UUID) *ble.Service {
+func FindServiceByUUID(services []*ble.Service, uuid string) *ble.Service {
+	u := ble.MustParse(uuid)
 	for _, service := range services {
 		if service.UUID.Equal(u) {
 			return service
@@ -16,7 +17,8 @@ func FindServiceByUUID(services []*ble.Service, u ble.UUID) *ble.Service {
 	return nil
 }
 
-func FindCharacteristicByUUID(characteristics []*ble.Characteristic, u ble.UUID) *ble.Characteristic {
+func FindCharacteristicByUUID(characteristics []*ble.Characteristic, uuid string) *ble.Characteristic {
+	u := ble.MustParse(uuid)
 	for _, characteristic := range characteristics {
 		if characteristic.UUID.Equal(u) {
 			return characteristic
@@ -25,13 +27,13 @@ func FindCharacteristicByUUID(characteristics []*ble.Characteristic, u ble.UUID)
 	return nil
 }
 
-func RequestVersionBattery(client ble.Client, profile *ble.Profile) (common.VersionBatteryResponse, error) {
-	mifloraService := FindServiceByUUID(profile.Services, ble.MustParse(common.MifloraServiceUUID))
+func RequestVersionBattery(client ble.Client) (common.VersionBatteryResponse, error) {
+	mifloraService := FindServiceByUUID(client.Profile().Services, common.MifloraServiceUUID)
 	if mifloraService == nil {
 		return common.VersionBatteryResponse{}, errors.New("Failed to get the miflora service")
 	}
 
-	mifloraVersionBatteryChar := FindCharacteristicByUUID(mifloraService.Characteristics, ble.MustParse(common.MifloraCharVersionBatteryUUID))
+	mifloraVersionBatteryChar := FindCharacteristicByUUID(mifloraService.Characteristics, common.MifloraCharVersionBatteryUUID)
 	if mifloraVersionBatteryChar == nil {
 		return common.VersionBatteryResponse{}, errors.New("Failed to get the version battery characteristic")
 	}
@@ -44,13 +46,13 @@ func RequestVersionBattery(client ble.Client, profile *ble.Profile) (common.Vers
 	return common.ParseVersionBattery(bytes), nil
 }
 
-func RequestModeChange(client ble.Client, profile *ble.Profile) error {
-	mifloraService := FindServiceByUUID(profile.Services, ble.MustParse(common.MifloraServiceUUID))
+func RequestModeChange(client ble.Client) error {
+	mifloraService := FindServiceByUUID(client.Profile().Services, common.MifloraServiceUUID)
 	if mifloraService == nil {
 		return errors.New("Failed to get the miflora service")
 	}
 
-	mifloraModeChangeChar := FindCharacteristicByUUID(mifloraService.Characteristics, ble.MustParse(common.MifloraCharModeChangeUUID))
+	mifloraModeChangeChar := FindCharacteristicByUUID(mifloraService.Characteristics, common.MifloraCharModeChangeUUID)
 	if mifloraModeChangeChar == nil {
 		return errors.New("Failed to discover the mode change characteristic")
 	}
@@ -63,13 +65,13 @@ func RequestModeChange(client ble.Client, profile *ble.Profile) error {
 	return nil
 }
 
-func RequestSensorData(client ble.Client, profile *ble.Profile) (common.SensorDataResponse, error) {
-	mifloraService := FindServiceByUUID(profile.Services, ble.MustParse(common.MifloraServiceUUID))
+func RequestSensorData(client ble.Client) (common.SensorDataResponse, error) {
+	mifloraService := FindServiceByUUID(client.Profile().Services, common.MifloraServiceUUID)
 	if mifloraService == nil {
 		return common.SensorDataResponse{}, errors.New("Failed to get the miflora service")
 	}
 
-	mifloraSensorDataChar := FindCharacteristicByUUID(mifloraService.Characteristics, ble.MustParse(common.MifloraCharReadSensorDataUUID))
+	mifloraSensorDataChar := FindCharacteristicByUUID(mifloraService.Characteristics, common.MifloraCharReadSensorDataUUID)
 	if mifloraSensorDataChar == nil {
 		return common.SensorDataResponse{}, errors.New("Failed to discover the sensor data characteristic")
 	}
