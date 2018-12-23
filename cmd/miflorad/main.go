@@ -19,6 +19,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// program version, will be populated on build
+var version string
+
 var (
 	scanTimeout = flag.Duration("scantimeout", 10*time.Second, "timeout after that a scan per peripheral will be aborted")
 	interval    = flag.Duration("interval", 25*time.Second, "metrics collection interval")
@@ -47,6 +50,14 @@ func checkTooShortInterval() error {
 			*interval, *scanTimeout, numPeripherals, *readRetries))
 	}
 	return nil
+}
+
+func getVersion() string {
+	if version == "" {
+		return "dev"
+	} else {
+		return version
+	}
 }
 
 func readData(peripheral *peripheral, client ble.Client) error {
@@ -180,6 +191,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
+
+	fmt.Fprintf(os.Stderr, "miflorad version %s\n", getVersion())
 
 	device, err := dev.NewDevice("default")
 	if err != nil {

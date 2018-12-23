@@ -1,6 +1,7 @@
 .POSIX:
 
 MIFLORA_ADDR?=00:00:00:00:00:00
+MIFLORAD_VERSION?=master
 
 RUN_COMMAND=miflorad
 RUN_OPTIONS=$(MIFLORA_ADDR)
@@ -34,7 +35,7 @@ remote-run: clean
 
 .PHONY: cmd/munin-miflora/miflorad
 cmd/munin-miflora/miflorad:
-	cd cmd/miflorad && CGO_ENABLED=0 go build && cd ../..
+	cd cmd/miflorad && CGO_ENABLED=0 go build -ldflags "-X main.version=$(MIFLORAD_VERSION)" && cd ../..
 
 .PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:
