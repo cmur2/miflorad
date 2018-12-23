@@ -3,6 +3,7 @@ module miflorad
 require (
 	github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142 // indirect
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
+	github.com/eclipse/paho.mqtt.golang v1.1.1
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-ble/ble v0.0.0-20181002102605-e78417b510a3
 	github.com/godbus/dbus v0.0.0-20181031085051-66d97ae // indirect
@@ -15,4 +16,5 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/sirupsen/logrus v1.2.0 // indirect
 	github.com/stretchr/testify v1.2.2
+	golang.org/x/net v0.0.0-20181220203305-927f97764cc3 // indirect
 )
