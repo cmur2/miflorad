@@ -35,12 +35,12 @@ remote-run: clean
 
 .PHONY: cmd/munin-miflora/miflorad
 cmd/munin-miflora/miflorad:
-	cd cmd/miflorad && CGO_ENABLED=0 go build -ldflags "-X main.version=$(MIFLORAD_VERSION)" && cd ../..
+	cd cmd/miflorad && CGO_ENABLED=0 go build -buildmode=pie -ldflags "-X main.version=$(MIFLORAD_VERSION)" && cd ../..
 
 .PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:
-	cd cmd/munin-miflora && CGO_ENABLED=0 go build && cd ../..
+	cd cmd/munin-miflora && CGO_ENABLED=0 go build -buildmode=pie && cd ../..
 
 .PHONY: cmd/munin-miflora/munin-miflora-gatt
 cmd/munin-miflora/munin-miflora-gatt:
-	cd cmd/munin-miflora-gatt && CGO_ENABLED=0 go build && cd ../..
+	cd cmd/munin-miflora-gatt && CGO_ENABLED=0 go build -buildmode=pie && cd ../..
