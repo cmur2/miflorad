@@ -15,12 +15,12 @@ run: clean build test
 
 .PHONY: clean
 clean:
-	rm -f cmd/munin-miflora/miflorad
+	rm -f cmd/miflorad/miflorad
 	rm -f cmd/munin-miflora/munin-miflora
-	rm -f cmd/munin-miflora/munin-miflora-gatt
+	rm -f cmd/munin-miflora-gatt/munin-miflora-gatt
 
 .PHONY: build
-build: cmd/munin-miflora/miflorad cmd/munin-miflora/munin-miflora cmd/munin-miflora/munin-miflora-gatt
+build: cmd/miflorad/miflorad cmd/munin-miflora/munin-miflora cmd/munin-miflora-gatt/munin-miflora-gatt
 
 .PHONY: test
 test: build
@@ -33,14 +33,14 @@ remote-run: clean
 	scp cmd/$(RUN_COMMAND)/$(RUN_COMMAND) extzero:$(RUN_COMMAND)
 	ssh extzero "./$(RUN_COMMAND) $(RUN_OPTIONS)"
 
-.PHONY: cmd/munin-miflora/miflorad
-cmd/munin-miflora/miflorad:
+.PHONY: cmd/miflorad/miflorad
+cmd/miflorad/miflorad:
 	cd cmd/miflorad && CGO_ENABLED=0 go build -buildmode=pie -ldflags "-X main.version=$(MIFLORAD_VERSION)" && cd ../..
 
 .PHONY: cmd/munin-miflora/munin-miflora
 cmd/munin-miflora/munin-miflora:
 	cd cmd/munin-miflora && CGO_ENABLED=0 go build -buildmode=pie && cd ../..
 
-.PHONY: cmd/munin-miflora/munin-miflora-gatt
-cmd/munin-miflora/munin-miflora-gatt:
+.PHONY: cmd/munin-miflora-gatt/munin-miflora-gatt
+cmd/munin-miflora-gatt/munin-miflora-gatt:
 	cd cmd/munin-miflora-gatt && CGO_ENABLED=0 go build -buildmode=pie && cd ../..
