@@ -28,12 +28,20 @@ var (
 	scanTimeout       = flag.Duration("scantimeout", 10*time.Second, "timeout after that a scan per peripheral will be aborted")
 	readRetries       = flag.Int("readretries", 2, "number of times reading will be attempted per peripheral")
 	interval          = flag.Duration("interval", 25*time.Second, "metrics collection interval")
-	prefix            = flag.String("prefix", "", "metrics name prefix")
 	brokerHost        = flag.String("brokerhost", "localhost", "MQTT broker host to send metrics to")
 	brokerUser        = flag.String("brokeruser", "", "MQTT broker user used for authentication")
 	brokerPassword    = flag.String("brokerpassword", "", "MQTT broker password used for authentication")
 	brokerUseTLS      = flag.Bool("brokerusetls", true, "whether TLS should be used for MQTT broker")
 	brokerTopicPrefix = flag.String("brokertopicprefix", "", "MQTT topic prefix for messages")
+	publishFormatFlag = flag.String("publishformat", "graphite", "MQTT message content format")
+	graphitePrefix    = flag.String("graphiteprefix", "", "Graphite metrics name prefix")
+)
+
+type publishFormat int
+
+const (
+	graphiteFormat publishFormat = iota
+	influxFormat   publishFormat = iota
 )
 
 type peripheral struct {
@@ -44,13 +52,30 @@ type peripheral struct {
 
 var allPeripherals []*peripheral
 
-type metric struct {
+type mifloraMetric interface {
+	getPeripheralId() string
+}
+
+type mifloraDataMetric struct {
 	peripheralId string
 	metaData     common.VersionBatteryResponse
 	sensorData   common.SensorDataResponse
 	connectTime  float64
 	readoutTime  float64
 	rssi         int
+}
+
+func (m mifloraDataMetric) getPeripheralId() string {
+	return m.peripheralId
+}
+
+type mifloraErrorMetric struct {
+	peripheralId string
+	failed       int
+}
+
+func (m mifloraErrorMetric) getPeripheralId() string {
+	return m.peripheralId
 }
 
 type mqttLogger struct {
@@ -125,7 +150,7 @@ func readData(peripheral *peripheral, client ble.Client) (common.SensorDataRespo
 	return sensorData, nil
 }
 
-func connectPeripheral(peripheral *peripheral, send chan metric) error {
+func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 	fmt.Fprintf(os.Stderr, "Scanning for %s...\n", peripheral.id)
 
 	// only way to get back the found advertisement, must be buffered!
@@ -178,7 +203,7 @@ func connectPeripheral(peripheral *peripheral, send chan metric) error {
 		return errors.Wrap(err2, "can't read data")
 	}
 
-	send <- metric{
+	send <- mifloraDataMetric{
 		peripheralId: common.MifloraGetAlphaNumericID(peripheral.id),
 		sensorData:   sensorData,
 		metaData:     peripheral.metaData,
@@ -190,7 +215,7 @@ func connectPeripheral(peripheral *peripheral, send chan metric) error {
 	return nil
 }
 
-func readPeripheral(peripheral *peripheral, send chan metric) error {
+func readPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 	var err error
 	for retry := 0; retry < *readRetries; retry++ {
 		err = connectPeripheral(peripheral, send)
@@ -202,7 +227,7 @@ func readPeripheral(peripheral *peripheral, send chan metric) error {
 	return err
 }
 
-func readAllPeripherals(quit chan struct{}, send chan metric) {
+func readAllPeripherals(quit chan struct{}, send chan mifloraMetric) {
 	for _, peripheral := range allPeripherals {
 		// check for quit signal (non-blocking) and terminate
 		select {
@@ -234,6 +259,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	var format publishFormat
+	switch *publishFormatFlag {
+	case "graphite":
+		format = graphiteFormat
+	case "influx":
+		format = influxFormat
+	default:
+		fmt.Fprintf(os.Stderr, "Unrecognized publish format %s! Exiting...\n", *publishFormatFlag)
+		os.Exit(1)
+	}
+
 	fmt.Fprintf(os.Stderr, "miflorad version %s\n", getVersion())
 
 	mqtt.WARN = mqttLogger{level: "warning"}
@@ -258,7 +294,7 @@ func main() {
 
 	intervalTicker := time.NewTicker(*interval)
 	quit := make(chan struct{})
-	send := make(chan metric, 1)
+	send := make(chan mifloraMetric, 1)
 	publish := make(chan string, 10)
 
 	go func() {
@@ -281,19 +317,15 @@ func main() {
 	}()
 
 	go func() {
-		for metric := range send {
-			timestamp := time.Now().Unix()
-			id := metric.peripheralId
-
-			publish <- fmt.Sprintf("%s.miflora.%s.battery_level %d %d", *prefix, id, metric.metaData.BatteryLevel, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.firmware_version %d %d", *prefix, id, metric.metaData.NumericFirmwareVersion(), timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.temperature %.1f %d", *prefix, id, metric.sensorData.Temperature, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.brightness %d %d", *prefix, id, metric.sensorData.Brightness, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.moisture %d %d", *prefix, id, metric.sensorData.Moisture, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.conductivity %d %d", *prefix, id, metric.sensorData.Conductivity, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.connect_time %.2f %d", *prefix, id, metric.connectTime, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.readout_time %.2f %d", *prefix, id, metric.readoutTime, timestamp)
-			publish <- fmt.Sprintf("%s.miflora.%s.rssi %d %d", *prefix, id, metric.rssi, timestamp)
+		switch format {
+		case graphiteFormat:
+			for metric := range send {
+				publishGraphite(metric, publish, *graphitePrefix)
+			}
+		case influxFormat:
+			for metric := range send {
+				publishInflux(metric, publish)
+			}
 		}
 	}()
 

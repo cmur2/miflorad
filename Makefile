@@ -24,6 +24,7 @@ build: cmd/miflorad/miflorad cmd/munin-miflora/munin-miflora cmd/munin-miflora-g
 
 .PHONY: test
 test: build
+	cd cmd/miflorad && go test -v -race && cd ../..
 	cd common && go test -v -race && cd ..
 
 .PHONY: remote-run
