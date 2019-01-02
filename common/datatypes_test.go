@@ -9,7 +9,7 @@ import (
 func TestNumericFirmwareVersion(t *testing.T) {
 	tables := []struct {
 		metaData VersionBatteryResponse
-		firmwire int
+		firmware int
 	}{
 		{VersionBatteryResponse{BatteryLevel: 99, FirmwareVersion: "1.0.0"}, 10000},
 		{VersionBatteryResponse{BatteryLevel: 88, FirmwareVersion: "2.6.6"}, 20606},
@@ -19,6 +19,6 @@ func TestNumericFirmwareVersion(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		assert.Equal(t, table.metaData.NumericFirmwareVersion(), table.firmwire)
+		assert.Equal(t, table.metaData.NumericFirmwareVersion(), table.firmware)
 	}
 }
