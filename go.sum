@@ -27,6 +27,7 @@ github.com/muka/ble v0.0.0-20180314094923-5613a57406d1 h1:DrMDOYCxMG7TUMjhBWnRsg
 github.com/muka/ble v0.0.0-20180314094923-5613a57406d1/go.mod h1:1lEPQDLh8Z86+REeQMqID8UpXCSdHF0fvU0qZj3b1eA=
 github.com/muka/go-bluetooth v0.0.0-20181012115104-31d8f53bf9a1 h1:VKhCDuxZ3+Bg+Plf7+CxgGRlNEdwHDKUqHoZLzer8Ms=
 github.com/muka/go-bluetooth v0.0.0-20181012115104-31d8f53bf9a1/go.mod h1:brKFFAJeW2mWp1W5D/GJhwbn3IpNR69jIm1qGWZcl50=
+github.com/muka/go-bluetooth v0.0.0-20190123084403-a5ba83cc4d9b/go.mod h1:brKFFAJeW2mWp1W5D/GJhwbn3IpNR69jIm1qGWZcl50=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
