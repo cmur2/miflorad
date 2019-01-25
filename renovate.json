@@ -6,7 +6,7 @@
   "commitMessageAction": "update",
   "packageRules": [
     {
-      "packageNames": ["^golang.org/x/net"],
+      "packageNames": ["golang.org/x/net"],
       "enabled": false
     }
   ]
