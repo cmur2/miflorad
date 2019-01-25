@@ -2,3 +2,4 @@
 cmd/miflorad/miflorad
 cmd/munin-miflora/munin-miflora
 cmd/munin-miflora-gatt/munin-miflora-gatt
+pkg/miflorad-*

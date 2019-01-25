@@ -48,3 +48,16 @@ handle = 0x0040, char properties = 0x02, char value handle = 0x0041, uuid = 0000
 
 - [https://wiki.hackerspace.pl/projects:xiaomi-flora](https://wiki.hackerspace.pl/projects:xiaomi-flora) (very nice teardown)
 - [https://github.com/open-homeautomation/miflora](https://github.com/open-homeautomation/miflora) (python library)
+
+## Doing a release
+
+Install the [github-release binary](https://github.com/buildkite/github-release) helper somewhere into your path as `github-release`.
+
+You also need a [personal access token](https://github.com/settings/tokens) for your Github account.
+
+The below will create a Github release of `miflorad` based on your current git working copy and create a matching git tag:
+
+```bash
+export GITHUB_RELEASE_ACCESS_TOKEN=my-personal-access-token
+MIFLORAD_VERSION=x.y.z make release
+```
