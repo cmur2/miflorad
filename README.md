@@ -61,3 +61,7 @@ The below will create a Github release of `miflorad` based on your current git w
 export GITHUB_RELEASE_ACCESS_TOKEN=my-personal-access-token
 MIFLORAD_VERSION=x.y.z make release
 ```
+
+## License
+
+miflorad is licensed under the Apache License, Version 2.0. See LICENSE for more information.
