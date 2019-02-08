@@ -11,7 +11,7 @@ require (
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
-	github.com/muka/ble v0.0.0-20180314094923-5613a57406d1 // indirect
+	github.com/muka/ble v0.0.0-20190208063703-c5982255bf40 // indirect
 	github.com/muka/go-bluetooth v0.0.0-20190205215946-510f85fa3c30
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.3.0 // indirect
