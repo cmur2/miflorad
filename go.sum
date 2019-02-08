@@ -27,6 +27,7 @@ github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab h1:n8cgpHzJ5+EDyDri2s/
 github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab/go.mod h1:y1pL58r5z2VvAjeG1VLGc8zOQgSOzbKN7kMHPvFXJ+8=
 github.com/muka/ble v0.0.0-20180314094923-5613a57406d1 h1:DrMDOYCxMG7TUMjhBWnRsgPfpPlz0sFL11ukl+2+CZU=
 github.com/muka/ble v0.0.0-20180314094923-5613a57406d1/go.mod h1:1lEPQDLh8Z86+REeQMqID8UpXCSdHF0fvU0qZj3b1eA=
+github.com/muka/ble v0.0.0-20190208063703-c5982255bf40/go.mod h1:1lEPQDLh8Z86+REeQMqID8UpXCSdHF0fvU0qZj3b1eA=
 github.com/muka/go-bluetooth v0.0.0-20181012115104-31d8f53bf9a1 h1:VKhCDuxZ3+Bg+Plf7+CxgGRlNEdwHDKUqHoZLzer8Ms=
 github.com/muka/go-bluetooth v0.0.0-20181012115104-31d8f53bf9a1/go.mod h1:brKFFAJeW2mWp1W5D/GJhwbn3IpNR69jIm1qGWZcl50=
 github.com/muka/go-bluetooth v0.0.0-20190123084403-a5ba83cc4d9b/go.mod h1:brKFFAJeW2mWp1W5D/GJhwbn3IpNR69jIm1qGWZcl50=
