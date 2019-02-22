@@ -4,10 +4,24 @@
   ],
   "commitMessagePrefix": "module:",
   "commitMessageAction": "update",
+  "rebaseStalePrs": true,
   "packageRules": [
     {
-      "packageNames": ["golang.org/x/net"],
-      "enabled": false
+      "packageNames": [
+        "github.com/currantlabs/gatt",
+        "github.com/muka/ble",
+        "github.com/muka/go-bluetooth"
+      ],
+      "extends": ["schedule:weekly"]
+    },
+    {
+      "packageNames": [
+        "github.com/coreos/go-systemd",
+        "github.com/mgutz/ansi",
+        "github.com/mgutz/logxi",
+        "golang.org/x/net"
+      ],
+      "extends": ["schedule:monthly"]
     }
   ]
 }
