@@ -16,5 +16,5 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.3.0 // indirect
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/net v0.0.0-20190111034749-915654e7eabc // indirect
+	golang.org/x/net v0.0.0-20190301014737-92fc7df08ae7 // indirect
 )
