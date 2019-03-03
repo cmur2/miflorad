@@ -19,6 +19,6 @@ func TestNumericFirmwareVersion(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		assert.Equal(t, table.metaData.NumericFirmwareVersion(), table.firmware)
+		assert.Equal(t, table.firmware, table.metaData.NumericFirmwareVersion())
 	}
 }

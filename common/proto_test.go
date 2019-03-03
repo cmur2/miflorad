@@ -19,7 +19,7 @@ func TestParseVersionBattery(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		assert.Equal(t, ParseVersionBattery(table.bytes), table.metaData)
+		assert.Equal(t, table.metaData, ParseVersionBattery(table.bytes))
 	}
 }
 
@@ -40,6 +40,6 @@ func TestParseSensorData(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		assert.Equal(t, ParseSensorData(table.bytes), table.sensorData)
+		assert.Equal(t, table.sensorData, ParseSensorData(table.bytes))
 	}
 }

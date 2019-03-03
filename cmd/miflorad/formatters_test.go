@@ -34,9 +34,9 @@ func TestPublishGraphite(t *testing.T) {
 		case mifloraErrorMetric:
 			for line := range publish {
 				parts := strings.Split(line, " ")
-				assert.Equal(t, len(parts), 3)
-				assert.Equal(t, parts[0], "foo.base.miflora.peri.failed")
-				assert.Equal(t, parts[1], "1")
+				assert.Equal(t, 3, len(parts))
+				assert.Equal(t, "foo.base.miflora.peri.failed", parts[0])
+				assert.Equal(t, "1", parts[1])
 				timestamp, err := strconv.ParseInt(parts[2], 10, 64)
 				assert.NoError(t, err)
 				assert.True(t, timestamp >= 0)
@@ -44,8 +44,8 @@ func TestPublishGraphite(t *testing.T) {
 		case mifloraDataMetric:
 			for line := range publish {
 				parts := strings.Split(line, " ")
-				assert.Equal(t, len(parts), 3)
-				assert.Equal(t, strings.Index(parts[0], "foo.base.miflora.peri"), 0)
+				assert.Equal(t, 3, len(parts))
+				assert.Equal(t, 0, strings.Index(parts[0], "foo.base.miflora.peri"))
 				assert.True(t, len(parts[1]) > 0)
 				timestamp, err := strconv.ParseInt(parts[2], 10, 64)
 				assert.NoError(t, err)
@@ -78,17 +78,17 @@ func TestPublishInflux(t *testing.T) {
 		case mifloraErrorMetric:
 			line := <-publish
 			parts := strings.Split(line, " ")
-			assert.Equal(t, len(parts), 3)
-			assert.Equal(t, parts[0], "miflora,id=peri")
-			assert.Equal(t, parts[1], "failed=1")
+			assert.Equal(t, 3, len(parts))
+			assert.Equal(t, "miflora,id=peri", parts[0])
+			assert.Equal(t, "failed=1", parts[1])
 			timestamp, err := strconv.ParseInt(parts[2], 10, 64)
 			assert.NoError(t, err)
 			assert.True(t, timestamp >= 0)
 		case mifloraDataMetric:
 			line := <-publish
 			parts := strings.Split(line, " ")
-			assert.Equal(t, len(parts), 3)
-			assert.Equal(t, parts[0], "miflora,id=peri")
+			assert.Equal(t, 3, len(parts))
+			assert.Equal(t, "miflora,id=peri", parts[0])
 			assert.True(t, len(parts[1]) > 0)
 			timestamp, err := strconv.ParseInt(parts[2], 10, 64)
 			assert.NoError(t, err)
