@@ -3,6 +3,7 @@ github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142 h1:3jFq2xL4ZajGK
 github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/go-systemd v0.0.0-20190204113319-081494f7ee4f/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/go-systemd v0.0.0-20190222213131-93d5ec2c7f76/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
+github.com/coreos/go-systemd v0.0.0-20190401025500-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e h1:qu1wqkuctiqRtgZu8kNMtFxQ7/xXuOxSJZ2kYoOxFM0=
 github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e/go.mod h1:GCdlaU9vOYeye8wQtSZNyZ4j5PhmnJ2HUqhRZO0KoZI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
