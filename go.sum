@@ -47,6 +47,7 @@ github.com/muka/go-bluetooth v0.0.0-20190222211956-d9e43e1ad94a/go.mod h1:tbUgXz
 github.com/muka/go-bluetooth v0.0.0-20190304025249-ed5c4e1993e2/go.mod h1:tbUgXz7VZqw14AD1gArXW8wcVQtfGWBZAIhyMziuTck=
 github.com/muka/go-bluetooth v0.0.0-20190325005234-1174effa3337/go.mod h1:tbUgXz7VZqw14AD1gArXW8wcVQtfGWBZAIhyMziuTck=
 github.com/muka/go-bluetooth v0.0.0-20190401025540-94cf950711a5/go.mod h1:tbUgXz7VZqw14AD1gArXW8wcVQtfGWBZAIhyMziuTck=
+github.com/muka/go-bluetooth v0.0.0-20190415005617-5c67d8618acd/go.mod h1:tbUgXz7VZqw14AD1gArXW8wcVQtfGWBZAIhyMziuTck=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
