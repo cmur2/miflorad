@@ -12,7 +12,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
 	github.com/muka/ble v0.0.0-20190208063703-c5982255bf40 // indirect
-	github.com/muka/go-bluetooth v0.0.0-20190401025540-94cf950711a5
+	github.com/muka/go-bluetooth v0.0.0-20190415005617-5c67d8618acd
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.1 // indirect
 	github.com/stretchr/testify v1.3.0
