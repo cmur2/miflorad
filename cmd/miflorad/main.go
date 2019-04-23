@@ -151,7 +151,6 @@ func readData(peripheral *peripheral, client ble.Client) (common.SensorDataRespo
 }
 
 func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
-	fmt.Fprintf(os.Stderr, "Scanning for %s...\n", peripheral.id)
 
 	// only way to get back the found advertisement, must be buffered!
 	foundAdvertisementChannel := make(chan ble.Advertisement, 1)
@@ -217,13 +216,17 @@ func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 
 func readPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 	var err error
+	fmt.Fprintf(os.Stderr, "Scanning for %s...", peripheral.id)
 	for retry := 0; retry < *readRetries; retry++ {
+		fmt.Fprintf(os.Stderr, " %d", retry+1)
 		err = connectPeripheral(peripheral, send)
 		// stop retrying once we have a success, last err will be returned (or nil)
 		if err == nil {
+			fmt.Fprintf(os.Stderr, ".")
 			break
 		}
 	}
+	fmt.Fprintf(os.Stderr, "\n")
 	return err
 }
 
