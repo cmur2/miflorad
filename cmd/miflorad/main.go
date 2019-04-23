@@ -214,16 +214,24 @@ func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 	return nil
 }
 
-func readPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
+func readPeripheral(quit chan struct{}, peripheral *peripheral, send chan mifloraMetric) error {
 	var err error
 	fmt.Fprintf(os.Stderr, "Scanning for %s...", peripheral.id)
+L:
 	for retry := 0; retry < *readRetries; retry++ {
+		// check for quit signal (non-blocking) and terminate
+		select {
+		case <-quit:
+			break L
+		default:
+		}
+
 		fmt.Fprintf(os.Stderr, " %d", retry+1)
 		err = connectPeripheral(peripheral, send)
 		// stop retrying once we have a success, last err will be returned (or nil)
 		if err == nil {
 			fmt.Fprintf(os.Stderr, ".")
-			break
+			break L
 		}
 	}
 	fmt.Fprintf(os.Stderr, "\n")
@@ -232,14 +240,7 @@ func readPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 
 func readAllPeripherals(quit chan struct{}, send chan mifloraMetric) {
 	for _, peripheral := range allPeripherals {
-		// check for quit signal (non-blocking) and terminate
-		select {
-		case <-quit:
-			return
-		default:
-		}
-
-		err := readPeripheral(peripheral, send)
+		err := readPeripheral(quit, peripheral, send)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to read peripheral %s, err: %s\n", peripheral.id, err)
 			// id := common.MifloraGetAlphaNumericID(peripheral.id)
@@ -350,8 +351,8 @@ func main() {
 	fmt.Fprintf(os.Stderr, "Received %s! Stopping...\n", signal)
 	intervalTicker.Stop()
 	close(quit)
-	// wait for last readPeripheral to finish (worst case)
-	time.Sleep(*scanTimeout * time.Duration(*readRetries))
+	// wait for last connectPeripheral to finish (worst case)
+	time.Sleep(*scanTimeout)
 
 	mqttClient.Disconnect(1000)
 
