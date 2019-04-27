@@ -39,7 +39,8 @@ release:
 	mkdir -p pkg
 	cd cmd/miflorad && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o "../../pkg/miflorad-$(MIFLORAD_VERSION)-linux-amd64" -ldflags="-s -w -X main.version=$(MIFLORAD_VERSION)" && cd ../..
 	cd cmd/miflorad && CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o "../../pkg/miflorad-$(MIFLORAD_VERSION)-linux-arm" -ldflags="-s -w -X main.version=$(MIFLORAD_VERSION)" && cd ../..
-	github-release "v$(MIFLORAD_VERSION)" pkg/miflorad-$(MIFLORAD_VERSION)-* --commit "master" --tag "v$(MIFLORAD_VERSION)" --prerelease --github-repository "cmur2/miflorad"
+#	github-release "v$(MIFLORAD_VERSION)" pkg/miflorad-$(MIFLORAD_VERSION)-* --commit "master" --tag "v$(MIFLORAD_VERSION)" --prerelease --github-repository "cmur2/miflorad"
+	github-release "v$(MIFLORAD_VERSION)" pkg/miflorad-$(MIFLORAD_VERSION)-* --commit "master" --tag "v$(MIFLORAD_VERSION)" --github-repository "cmur2/miflorad"
 
 .PHONY: cmd/miflorad/miflorad
 cmd/miflorad/miflorad:
