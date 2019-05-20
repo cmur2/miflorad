@@ -126,7 +126,7 @@ func getMQTTOptions() *mqtt.ClientOptions {
 func readData(peripheral *peripheral, client ble.Client) (common.SensorDataResponse, error) {
 	// re-request meta data (for battery level) if last check more than 24 hours ago
 	// Source: https://github.com/open-homeautomation/miflora/blob/ffd95c3e616df8843cc8bff99c9b60765b124092/miflora/miflora_poller.py#L92
-	if time.Since(peripheral.lastMetaDataFetch) >= 24*time.Hour {
+	if time.Since(peripheral.lastMetaDataFetch) >= 1*time.Hour {
 		metaData, err := impl.RequestVersionBattery(client)
 		if err != nil {
 			return common.SensorDataResponse{}, errors.Wrap(err, "can't request version battery")
