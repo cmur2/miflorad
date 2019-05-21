@@ -20,6 +20,7 @@ github.com/go-ble/ble v0.0.0-20181002102605-e78417b510a3 h1:rsLGztXl2QJvj4x/PAWz
 github.com/go-ble/ble v0.0.0-20181002102605-e78417b510a3/go.mod h1:UMPB54/KFpdTdfH7Yovhk3J6kzgzE88e3QZi8cbayis=
 github.com/go-ble/ble v0.0.0-20190515144946-e4c77014ff5a h1:Di8pZP1T0FmSSK1x+TsKQnq3Wn1dZ5wbpvLcqgit9wo=
 github.com/go-ble/ble v0.0.0-20190515144946-e4c77014ff5a/go.mod h1:UMPB54/KFpdTdfH7Yovhk3J6kzgzE88e3QZi8cbayis=
+github.com/go-ble/ble v0.0.0-20190521173423-147700f13610/go.mod h1:UMPB54/KFpdTdfH7Yovhk3J6kzgzE88e3QZi8cbayis=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/mattn/go-colorable v0.0.9 h1:UVL0vNpWh04HeJXV0KLcaT7r06gOH2l4OW6ddYRUIY4=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
