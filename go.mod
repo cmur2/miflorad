@@ -1,7 +1,7 @@
 module miflorad
 
 require (
-	github.com/coreos/go-systemd v0.0.0-20190401025500-95778dfbb74e // indirect
+	github.com/coreos/go-systemd v0.0.0-20190702064352-e64a0ec8b42a // indirect
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect
