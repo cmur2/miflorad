@@ -9,7 +9,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-ble/ble v0.0.0-20190513065955-e4c77014ff5a
 	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-isatty v0.0.9 // indirect
+	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
 	github.com/pkg/errors v0.8.1
