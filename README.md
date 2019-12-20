@@ -1,6 +1,6 @@
 # miflorad
 
-[![Build Status](https://travis-ci.org/cmur2/miflorad.svg?branch=master)](https://travis-ci.org/cmur2/miflorad)
+![Build Status](https://github.com/cmur2/miflorad/workflows/ci/badge.svg)
 
 This project aims to produce tools written in Go for interfacing with Xiaomi Flora sensors for IoT use cases.
 

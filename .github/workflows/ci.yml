@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+  schedule:
+  - cron: '3 4 * * 4'  # weekly on thursday morning
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go:
+        - '1.11'
+        - '1.12'
+        - '1.13'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+    - name: Set up Make
+      run: |
+        sudo apt-get -y install make
+    - name: Build
+      env:
+        GO111MODULE: on
+        GOPROXY: direct
+        GOSUMDB: off
+      run: |
+        make
