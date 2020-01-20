@@ -7,7 +7,7 @@ require (
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/go-ble/ble v0.0.0-20190513065955-e4c77014ff5a
+	github.com/go-ble/ble 0a73a9da88eb
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
