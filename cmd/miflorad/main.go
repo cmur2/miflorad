@@ -21,9 +21,6 @@ import (
 
 const mqttConnectTimeout = 10 * time.Second
 
-// program version, will be populated on build
-var version string
-
 var (
 	scanTimeout       = flag.Duration("scantimeout", 10*time.Second, "timeout after that a scan per peripheral will be aborted")
 	readRetries       = flag.Int("readretries", 2, "number of times reading will be attempted per peripheral")
@@ -94,19 +91,12 @@ func checkTooShortInterval() error {
 	numPeripherals := int64(len(flag.Args()))
 	numReadRetries := int64(*readRetries)
 	if (*scanTimeout).Nanoseconds()*numReadRetries*numPeripherals >= (*interval).Nanoseconds() {
-		return errors.New(fmt.Sprintf(
-			"The interval of %s is too short given the scan timeout of %s for %d peripheral(s) with %d retries each! Exiting...\n",
-			*interval, *scanTimeout, numPeripherals, *readRetries))
+		return errors.Errorf(
+			"The interval of %s is too short given the scan timeout of %s "+
+				"for %d peripheral(s) with %d retries each! Exiting...\n",
+			*interval, *scanTimeout, numPeripherals, *readRetries)
 	}
 	return nil
-}
-
-func getVersion() string {
-	if version == "" {
-		return "dev"
-	} else {
-		return version
-	}
 }
 
 func getMQTTOptions() *mqtt.ClientOptions {
@@ -156,7 +146,7 @@ func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 	foundAdvertisementChannel := make(chan ble.Advertisement, 1)
 
 	filter := func(adv ble.Advertisement) bool {
-		if strings.ToUpper(adv.Addr().String()) == strings.ToUpper(peripheral.id) {
+		if strings.EqualFold(adv.Addr().String(), peripheral.id) {
 			foundAdvertisementChannel <- adv
 			return true
 		}
@@ -194,12 +184,16 @@ func connectPeripheral(peripheral *peripheral, send chan mifloraMetric) error {
 
 	timeReadoutTook := time.Since(timeReadoutStart).Seconds()
 
-	client.CancelConnection()
+	err3 := client.CancelConnection()
 
 	<-done
 
 	if err2 != nil {
 		return errors.Wrap(err2, "can't read data")
+	}
+
+	if err3 != nil {
+		return errors.Wrap(err3, "can't disconnect after reading data")
 	}
 
 	send <- mifloraDataMetric{
@@ -253,7 +247,8 @@ func readAllPeripherals(quit chan struct{}, send chan mifloraMetric) {
 func main() {
 	flag.Parse()
 	if len(flag.Args()) < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s [options] peripheral-id [peripheral-ids...] \n", os.Args[0])
+		fmt.Fprintf(os.Stderr,
+			"Usage: %s [options] peripheral-id [peripheral-ids...] \n", os.Args[0])
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -270,7 +265,8 @@ func main() {
 	case "influx":
 		format = influxFormat
 	default:
-		fmt.Fprintf(os.Stderr, "Unrecognized publish format %s! Exiting...\n", *publishFormatFlag)
+		fmt.Fprintf(os.Stderr, "Unrecognized publish format %s! Exiting...\n",
+			*publishFormatFlag)
 		os.Exit(1)
 	}
 
