@@ -1,12 +1,21 @@
 package main
 
-// program version, will be populated on build
-var version string
+import (
+	"runtime/debug"
+)
 
 func getVersion() string {
-	if version == "" {
-		return "dev"
-	} else {
-		return version
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
 	}
+
+	for _, kv := range info.Settings {
+		switch kv.Key {
+		case "vcs.revision":
+			return kv.Value[0:8]
+		}
+	}
+
+	return "unknown"
 }
