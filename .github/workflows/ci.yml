@@ -12,6 +12,7 @@ jobs:
       matrix:
         go:
         - '1.18'
+      fail-fast: false
     env:
       GO111MODULE: on
       GOPROXY: direct
@@ -25,3 +26,13 @@ jobs:
     - name: Build
       run: |
         make
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check workflow files
+      run: |
+        echo "::add-matcher::.github/actionlint-matcher.json"
+        bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        ./actionlint
