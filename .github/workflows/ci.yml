@@ -1,3 +1,4 @@
+---
 name: ci
 
 on:
@@ -11,7 +12,7 @@ jobs:
     strategy:
       matrix:
         go:
-        - '1.18'
+        - '1.19'
       fail-fast: false
     env:
       GO111MODULE: on
