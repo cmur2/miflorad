@@ -1,6 +1,6 @@
 module miflorad
 
-go 1.19
+go 1.23
 
 require (
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
