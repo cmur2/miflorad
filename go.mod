@@ -1,6 +1,6 @@
 module miflorad
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/currantlabs/gatt v0.0.0-20161006170101-f949eac78f4e
@@ -19,8 +19,8 @@ require (
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/raff/goble v0.0.0-20200327175727-d63360dcfd80 // indirect
-	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
